@@ -1,4 +1,4 @@
-// KBO CLASSIC Scoreboard - Ultimate Edition (CMD optimized + Auto Banner)
+// Scoreboard - Ultimate Edition (CMD optimized + Auto Banner)
 // Build: cl /EHsc /std:c++17 kbo_classic.cpp
 
 #include <stdio.h>
@@ -88,19 +88,25 @@ static void interruptibleBeep(int freq, int total_ms, atomic<bool>& flag, int sl
     }
 }
 void playKBOMelody() {
-    const int melody[][2] = {
-        {523,120}, {659,120}, {784,130}, {880,120},
-        {988,120}, {880,120}, {784,100}, {659,100},
-        {784,130}, {659,110}, {523,250}, {0,100},
-        {784,100}, {880,100}, {988,130}, {1046,130},
-        {988,120}, {880,100}, {784,100}, {659,100},
-        {523,150}, {0,150},
+    int melody[][2] = {
+        {523, 120}, {659, 120}, {784, 150}, {988, 120},  // 도-미-솔-시♭
+        {1046, 150}, {988, 120}, {784, 120}, {659, 100},
+        {523, 150}, {0, 100},                            // “PLAY BALL” 첫 리프 느낌
+        {659, 100}, {784, 100}, {880, 130}, {988, 130},
+        {880, 100}, {784, 100}, {659, 100}, {523, 200},  // 이어지는 브라스 리듬
+        {0, 200},
+        {784, 100}, {880, 100}, {988, 130}, {1046, 130}, // 상승하는 플레이볼 사운드
+        {988, 120}, {880, 100}, {784, 100}, {659, 100},
+        {523, 200}, {0, 200}
     };
-    const int N = sizeof(melody)/sizeof(melody[0]);
+
     while (music_running) {
-        for (int i = 0; i < N; ++i) {
+        for (auto &note : melody) {
             if (!music_running) return;
-            interruptibleBeep(melody[i][0], melody[i][1], music_running, 15);
+            if (note[0] == 0)
+                Sleep(note[1]);
+            else
+                Beep(note[0], note[1]);
         }
     }
 }
@@ -133,6 +139,7 @@ void toggle_theme() {
     system("cls");
 }
 
+// ========== 인트로 ==========
 void intro_screen() {
     system("cls");
     printf("\n");
@@ -402,20 +409,36 @@ void save_result_txt(TeamName team[2], const GameData& gd) {
     fclose(fp);
 }
 void save_result_csv(TeamName team[2], const GameData& gd) {
-    FILE* fp=fopen("score.csv","w"); if(!fp) return;
-    int INN=gd.innings();
-    fprintf(fp,"Team"); for(int i=1;i<=INN;i++) fprintf(fp,",%d",i);
-    fprintf(fp,",R,H,E,B\n");
-    auto line=[&](int t){
-        fprintf(fp,"%s",team[t].name);
-        for(int i=0;i<INN;i++){
-            if(gd.R[t][i]<0) fprintf(fp,",");
-            else fprintf(fp,",%d",gd.R[t][i]);
+    FILE* fp = fopen("score.csv", "wb");  // 🔹 꼭 "wb" (바이너리 모드)
+    if (!fp) return;
+
+    // 🔸 UTF-8 BOM 추가 (엑셀 한글 깨짐 방지)
+    unsigned char bom[3] = {0xEF, 0xBB, 0xBF};
+    fwrite(bom, sizeof(bom), 1, fp);
+
+    // CSV 헤더 작성
+    fprintf(fp, "Team");
+    for (int i = 1; i <= gd.innings(); i++)
+        fprintf(fp, ",%d", i);
+    fprintf(fp, ",R,H,E,B\n");
+
+    // 각 팀별 라인스코어 작성
+    for (int t = 0; t < 2; t++) {
+        fprintf(fp, "%s", team[t].name);
+        for (int i = 0; i < gd.innings(); i++) {
+            if (gd.R[t][i] >= 0)
+                fprintf(fp, ",%d", gd.R[t][i]);
+            else
+                fprintf(fp, ",");
         }
-        fprintf(fp,",%d,%d,%d,%d\n",
-            sum_nonneg(gd.R[t]), sum_vec(gd.H[t]), sum_vec(gd.E[t]), sum_vec(gd.B[t]));
-    };
-    line(0); line(1); fclose(fp);
+        fprintf(fp, ",%d,%d,%d,%d\n",
+            sum_nonneg(gd.R[t]),
+            sum_vec(gd.H[t]),
+            sum_vec(gd.E[t]),
+            sum_vec(gd.B[t]));
+    }
+
+    fclose(fp);
 }
 
 // ========== 이닝 수정 ==========
