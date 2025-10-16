@@ -1,4 +1,4 @@
-// KBO CLASSIC Scoreboard - Ultimate Edition (CMD optimized)
+// KBO CLASSIC Scoreboard - Ultimate Edition (CMD optimized + Auto Banner)
 // Build: cl /EHsc /std:c++17 kbo_classic.cpp
 
 #include <stdio.h>
@@ -18,6 +18,9 @@ using namespace std;
 
 #define REGULATION_INNING 9
 #define MENU_CODE -999
+
+// 랜덤 모드에서 반이닝 결과 보여주는 시간(ms)
+const int AUTO_STEP_MS = 700;  // 300~1200 사이 취향대로
 
 atomic<bool> music_running(true);
 
@@ -179,6 +182,15 @@ void input_team(TeamName team[2]) {
 int sum_nonneg(const vector<int>& v){ int s=0; for(int x:v) if(x>=0)s+=x; return s; }
 int sum_vec(const vector<int>& v){ return accumulate(v.begin(),v.end(),0); }
 
+// ========== 상단 진행 배너 ==========
+void show_banner_line(const char* text) {
+    int cw = get_console_width();
+    setColor(theme.hl);
+    print_centered(text, cw);
+    setColor(theme.normal);
+    draw_line();
+}
+
 // ========== 스코어보드 ==========
 void print_team_name(const char* name, bool isHome, int width) {
     setColor(isHome ? theme.home : theme.away);
@@ -218,73 +230,139 @@ void display_scoreboard(TeamName team[2], const GameData& gd,
 }
 
 // ========== 입력(정규 이닝) ==========
+// 랜덤(2): 반이닝마다 즉시 점수/스탯 반영 → 상단 배너와 함께 잠깐 보여주고 자동 다음 반이닝으로.
+// 수동(1): 기존과 동일.
 bool input_regulation(TeamName team[2], GameData& gd, int auto_mode) {
     system("cls");
     display_scoreboard(team, gd);
 
     int INN = gd.innings();
-    for (int i=0; i<INN; i++) {
-        for (int t=0; t<2; t++) {
+    for (int i = 0; i < INN; i++) {
+        for (int t = 0; t < 2; t++) {
+
             if (auto_mode == 2) {
-                gd.R[t][i]=rand()%5; gd.H[t][i]=rand()%4; gd.E[t][i]=rand()%2; gd.B[t][i]=rand()%3;
-            } else {
+                // --- 랜덤 결과 생성 (반이닝 단위) ---
+                int rr = rand() % 5;
+                int hh = rand() % 4;
+                int ee = rand() % 2;
+                int bb = rand() % 3;
+
+                // 즉시 반영
+                gd.R[t][i] = rr; gd.H[t][i] = hh; gd.E[t][i] = ee; gd.B[t][i] = bb;
+
+                // 상단 진행 배너 + 결과 잠깐 표시 (자동 진행)
                 system("cls");
+                char banner[128];
+                snprintf(banner, sizeof(banner),
+                         "▶ [자동] %d회 %s 진행 중... (%s: %s)",
+                         i + 1, (t == 0 ? "초" : "말"),
+                         (t == 0 ? "원정" : "홈"), team[t].name);
+                show_banner_line(banner);
                 display_scoreboard(team, gd, t, i);
-                printf("\n현재: [%s - %d회차]\n", team[t].name, i+1);
-                printf("(메뉴로 돌아가려면 %d 입력)\n", MENU_CODE);
-                int rr,hh,ee,bb;
-                printf("점수 : "); rr=scan_int_safe(); if(rr==MENU_CODE) return false;
-                printf("안타 : "); hh=scan_int_safe(); if(hh==MENU_CODE) return false;
-                printf("실책 : "); ee=scan_int_safe(); if(ee==MENU_CODE) return false;
-                printf("포볼 : "); bb=scan_int_safe(); if(bb==MENU_CODE) return false;
-                gd.R[t][i]=max(0,rr); gd.H[t][i]=max(0,hh); gd.E[t][i]=max(0,ee); gd.B[t][i]=max(0,bb);
 
-                system("cls");
-                int nextTeam=(t==0?1:-1), nextInning=(t==0?i:-1);
-                display_scoreboard(team, gd, nextTeam, nextInning);
-            }
+                printf("\n[자동] %d회 %s  ▶  점수:%d  안타:%d  실책:%d  포볼:%d\n",
+                       i + 1, (t == 0 ? "초(원정)" : "말(홈)"), rr, hh, ee, bb);
 
-            // ESC/H 빠른 처리
-            if (_kbhit()) {
-                int ch=_getch();
-                if (ch==27) return false; // ESC
-                if (ch=='h'||ch=='H') {
-                    system("cls");
-                    printf("[도움말]\n- 수동 입력 중 %d 입력 시 메뉴 복귀\n- ESC: 메뉴 복귀\n- H: 도움말\n\n", MENU_CODE);
-                    printf("아무 키나 누르면 계속...");
-                    _getch();
+                // ESC로 중도 종료(선택), 아니면 자동 진행
+                DWORD start = GetTickCount();
+                while (GetTickCount() - start < (DWORD)AUTO_STEP_MS) {
+                    if (_kbhit() && _getch() == 27) return false;
+                    Sleep(10);
                 }
+            } else {
+                // --- 수동 입력 ---
+                system("cls");
+                char banner[128];
+                snprintf(banner, sizeof(banner),
+                         "▶ %d회 %s 입력 중... (%s: %s)",
+                         i + 1, (t == 0 ? "초" : "말"),
+                         (t == 0 ? "원정" : "홈"), team[t].name);
+                show_banner_line(banner);
+
+                display_scoreboard(team, gd, t, i);
+                printf("\n현재: [%s - %d회차 %s]\n", team[t].name, i + 1, t == 0 ? "초" : "말");
+                printf("(메뉴로 돌아가려면 %d 입력)\n", MENU_CODE);
+
+                int rr, hh, ee, bb;
+                printf("점수 : "); rr = scan_int_safe(); if (rr == MENU_CODE) return false;
+                printf("안타 : "); hh = scan_int_safe(); if (hh == MENU_CODE) return false;
+                printf("실책 : "); ee = scan_int_safe(); if (ee == MENU_CODE) return false;
+                printf("포볼 : "); bb = scan_int_safe(); if (bb == MENU_CODE) return false;
+
+                gd.R[t][i] = max(0, rr);
+                gd.H[t][i] = max(0, hh);
+                gd.E[t][i] = max(0, ee);
+                gd.B[t][i] = max(0, bb);
+
+                // 다음 반이닝 예고 하이라이트
+                system("cls");
+                display_scoreboard(team, gd, (t == 0 ? 1 : -1), (t == 0 ? i : -1));
             }
         }
     }
+
     system("cls");
     display_scoreboard(team, gd);
     return true;
 }
 
 // ========== 입력(연장전) ==========
+// 랜덤(2): 반이닝마다 즉시 반영 → 상단 배너와 함께 잠깐 표시 후 자동 진행.
+// 수동(1): 기존과 동일.
 bool input_extra(TeamName team[2], GameData& gd, int auto_mode) {
-    int inningNo = gd.innings()+1;
+    int inningNo = gd.innings() + 1; // 표시용
     gd.push_one_inning();
-    int i = gd.innings()-1;
+    int i = gd.innings() - 1;
 
-    for (int t=0; t<2; t++) {
+    for (int t = 0; t < 2; t++) {
         if (auto_mode == 2) {
-            gd.R[t][i]=rand()%5; gd.H[t][i]=rand()%4; gd.E[t][i]=rand()%2; gd.B[t][i]=rand()%3;
-        } else {
+            int rr = rand() % 5;
+            int hh = rand() % 4;
+            int ee = rand() % 2;
+            int bb = rand() % 3;
+
+            gd.R[t][i] = rr; gd.H[t][i] = hh; gd.E[t][i] = ee; gd.B[t][i] = bb;
+
             system("cls");
+            char banner[128];
+            snprintf(banner, sizeof(banner),
+                     "▶ [자동] 연장 %d회 %s 진행 중... (%s: %s)",
+                     inningNo, (t == 0 ? "초" : "말"),
+                     (t == 0 ? "원정" : "홈"), team[t].name);
+            show_banner_line(banner);
+
+            display_scoreboard(team, gd, t, i);
+            printf("\n[자동] 연장 %d회 %s  ▶  점수:%d  안타:%d  실책:%d  포볼:%d\n",
+                   inningNo, (t == 0 ? "초(원정)" : "말(홈)"), rr, hh, ee, bb);
+
+            DWORD start = GetTickCount();
+            while (GetTickCount() - start < (DWORD)AUTO_STEP_MS) {
+                if (_kbhit() && _getch() == 27) return false; // ESC로 중단 가능(선택)
+                Sleep(10);
+            }
+        } else {
+            // 수동 입력
+            system("cls");
+            char banner[128];
+            snprintf(banner, sizeof(banner),
+                     "▶ 연장 %d회 %s 입력 중... (%s: %s)",
+                     inningNo, (t == 0 ? "초" : "말"),
+                     (t == 0 ? "원정" : "홈"), team[t].name);
+            show_banner_line(banner);
+
             display_scoreboard(team, gd, t, i);
             printf("\n[연장 %d회 - %s]\n(메뉴로 돌아가려면 %d 입력)\n", inningNo, team[t].name, MENU_CODE);
-            int rr,hh,ee,bb;
-            printf("점수 : "); rr=scan_int_safe(); if(rr==MENU_CODE) return false;
-            printf("안타 : "); hh=scan_int_safe(); if(hh==MENU_CODE) return false;
-            printf("실책 : "); ee=scan_int_safe(); if(ee==MENU_CODE) return false;
-            printf("포볼 : "); bb=scan_int_safe(); if(bb==MENU_CODE) return false;
-            gd.R[t][i]=max(0,rr); gd.H[t][i]=max(0,hh); gd.E[t][i]=max(0,ee); gd.B[t][i]=max(0,bb);
+            int rr, hh, ee, bb;
+            printf("점수 : "); rr = scan_int_safe(); if (rr == MENU_CODE) return false;
+            printf("안타 : "); hh = scan_int_safe(); if (hh == MENU_CODE) return false;
+            printf("실책 : "); ee = scan_int_safe(); if (ee == MENU_CODE) return false;
+            printf("포볼 : "); bb = scan_int_safe(); if (bb == MENU_CODE) return false;
+            gd.R[t][i] = max(0, rr); gd.H[t][i] = max(0, hh); gd.E[t][i] = max(0, ee); gd.B[t][i] = max(0, bb);
         }
-        if (_kbhit() && _getch()==27) return false; // ESC
     }
-    system("cls"); display_scoreboard(team, gd);
+
+    system("cls");
+    display_scoreboard(team, gd);
     return true;
 }
 
@@ -366,7 +444,8 @@ void show_help() {
     printf("- 인트로: 엔터 → 음악 즉시 종료\n");
     printf("- 메뉴: 숫자키(1~5), H(도움말), ESC(종료) → 엔터 없이 즉시 반응\n");
     printf("- 수동 입력 중 %d 입력 → 메뉴로 복귀(데이터 유지)\n", MENU_CODE);
-    printf("- 9회 종료 후 동점이면 연장전 진행(이닝 자동 확장)\n");
+    printf("- 랜덤 모드: 반이닝마다 자동으로 결과 반영, 상단 배너 표시 후 다음 반이닝으로 자동 진행\n");
+    printf("- 9회 종료 후 동점이면 연장전 자동 진행(랜덤 모드), 수동 모드는 묻고 진행\n");
     printf("- 4) 이닝/점수 수정: 과거 이닝 점수/안타/실책/포볼 수정\n");
     printf("- 5) 색상 테마 토글: CMD 배경/글자색 전환\n");
     printf("\n아무 키나 누르면 돌아갑니다..."); _getch();
@@ -412,7 +491,7 @@ int main() {
         system("cls");
         printf("=== 점수 입력 방법 선택 ===\n");
         printf("1) 수동 입력 모드\n");
-        printf("2) 랜덤 시뮬레이션 모드\n");
+        printf("2) 랜덤 시뮬레이션 모드 (자동 진행)\n");
         printf("3) 초기화 후 팀 다시 입력\n");
         printf("4) 이닝/점수 수정\n");
         printf("5) 색상 테마 토글\n");
@@ -436,15 +515,27 @@ int main() {
             printf("\n아무 키나 누르면 메뉴로 이동합니다..."); _getch(); continue;
         }
 
-        // 연장전
+        // 연장전: 랜덤 모드는 자동, 수동 모드는 묻고 진행
         int awayR=sum_nonneg(gd.R[0]), homeR=sum_nonneg(gd.R[1]);
-        while (awayR == homeR) {
-            system("cls"); display_scoreboard(team, gd);
-            printf("\n동점입니다. 연장전을 진행할까요? (1:예 / 기타:아니오) : ");
-            int go = scan_int_safe(); if (go != 1) break;
-            bool ok = input_extra(team, gd, choice);
-            if (!ok) break;
-            awayR=sum_nonneg(gd.R[0]); homeR=sum_nonneg(gd.R[1]);
+        if (choice == 2) {
+            int extra_limit = 20, played=0; // 안전장치
+            while (awayR == homeR && played < extra_limit) {
+                bool ok = input_extra(team, gd, choice);
+                if (!ok) break;
+                awayR=sum_nonneg(gd.R[0]); homeR=sum_nonneg(gd.R[1]);
+                played++;
+            }
+        } else {
+            while (awayR == homeR) {
+                system("cls");
+                display_scoreboard(team, gd);
+                printf("\n동점입니다. 연장전을 진행할까요? (1:예 / 기타:아니오) : ");
+                int go = scan_int_safe();
+                if (go != 1) break;
+                bool ok = input_extra(team, gd, choice);
+                if (!ok) break;
+                awayR=sum_nonneg(gd.R[0]); homeR=sum_nonneg(gd.R[1]);
+            }
         }
 
         // 결과/저장
