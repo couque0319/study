@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>striker2945 - 메인</title>
+
+  <!-- 스타일 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/main_layout.css" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+</head>
+
+<body>
+  <!-- 오디오 -->
+  <audio id="main-music" src="assets/audio/main_music.mp3" loop></audio>
+  <audio id="sfx-chiose" src="assets/audio/chiose.mp3"></audio>
+  <audio id="sfx-pick" src="assets/audio/pick.mp3"></audio>
+
+  <!-- ⚙️ 설정 버튼 -->
+  <div class="settings-cog" id="settings-open-btn">⚙️</div>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main-content">
+    <div class="main-title">
+      <h1>striker2945</h1>
+      <p class="subtitle">기체를 선택하고 전장에 돌입하라!</p>
+    </div>
+
+    <div class="main-menu-buttons">
+      <a href="select_stage.html" class="menu-btn">START</a>
+      <a href="hangar.html" class="menu-btn">HANGAR</a>
+    </div>
+  </main>
+
+  <!-- 설정 모달 -->
+  <div class="settings-modal" id="settings-modal">
+    <div class="settings-content">
+      <h2>SETTINGS</h2>
+      <ul>
+        <li><label>BGM Volume <input type="range" min="0" max="100" value="50" id="bgm-volume"></label></li>
+        <li><label>SFX Volume <input type="range" min="0" max="100" value="70" id="sfx-volume"></label></li>
+        <li class="setting-group">
+          <label>Controls</label>
+          <div class="control-buttons">
+            <button class="control-btn" data-control="arrows">ARROWS</button>
+            <button class="control-btn" data-control="wasd">WASD</button>
+            <button class="control-btn" data-control="mouse">MOUSE</button>
+          </div>
+        </li>
+      </ul>
+      <button id="settings-close-btn">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- 스크립트 -->
+  <script>
+    // --- 오디오 및 볼륨 제어 ---
+    const audio = document.getElementById('main-music');
+    const sfxChiose = document.getElementById('sfx-chiose');
+    const sfxPick = document.getElementById('sfx-pick');
+    const bgmVolumeSlider = document.getElementById('bgm-volume');
+    const sfxVolumeSlider = document.getElementById('sfx-volume');
+
+    // 1. 저장된 볼륨 값 로드 및 적용
+    const savedBGMVolume = localStorage.getItem('bgmVolume') || 50;
+    bgmVolumeSlider.value = savedBGMVolume;
+    audio.volume = savedBGMVolume / 100;
+
+    const savedSFXVolume = localStorage.getItem('sfxVolume') || 70;
+    sfxVolumeSlider.value = savedSFXVolume;
+    sfxChiose.volume = savedSFXVolume / 100;
+    sfxPick.volume = savedSFXVolume / 100;
+
+    // 2. 슬라이더 조작 시 볼륨 변경 및 저장
+    bgmVolumeSlider.addEventListener('input', (e) => {
+      const newVolume = e.target.value;
+      audio.volume = newVolume / 100;
+      localStorage.setItem('bgmVolume', newVolume);
+    });
+
+    sfxVolumeSlider.addEventListener('input', (e) => {
+      const newVolume = e.target.value;
+      sfxChiose.volume = newVolume / 100;
+      sfxPick.volume = newVolume / 100;
+      localStorage.setItem('sfxVolume', newVolume);
+    });
+
+    // 3. 페이지 로드 시 음악 재생 시도 (브라우저 정책에 따라 지연될 수 있음)
+    audio.play().catch(e => console.log("음악 자동 재생 실패: 사용자 상호작용 필요", e));
+
+    // --- 설정 모달 토글 ---
+    const settingsModal = document.getElementById('settings-modal');
+    const openBtn = document.getElementById('settings-open-btn');
+    const closeBtn = document.getElementById('settings-close-btn');
+
+    openBtn.addEventListener('click', () => settingsModal.classList.add('show'));
+    closeBtn.addEventListener('click', () => settingsModal.classList.remove('show'));
+    window.addEventListener('click', (event) => {
+      if (event.target === settingsModal) {
+        settingsModal.classList.remove('show');
+      }
+    });
+
+    // --- 조작 방식 설정 ---
+    const controlButtons = document.querySelectorAll('.control-btn');
+    const savedControl = localStorage.getItem('playerControl') || 'arrows';
+
+    controlButtons.forEach(btn => {
+      if (btn.dataset.control === savedControl) {
+        btn.classList.add('active');
+      }
+    });
+
+    controlButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        controlButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        localStorage.setItem('playerControl', btn.dataset.control);
+      });
+    });
+
+    // --- 메인 메뉴 버튼 사운드 효과 ---
+    const menuButtons = document.querySelectorAll('.main-menu-buttons .menu-btn');
+
+    menuButtons.forEach(button => {
+      button.addEventListener('mouseover', () => {
+        sfxChiose.currentTime = 0; // 사운드를 처음부터 재생
+        sfxChiose.play().catch(e => console.log("SFX 재생 실패 (mouseover):", e));
+      });
+
+      button.addEventListener('click', (event) => {
+        event.preventDefault(); // 기본 링크 이동 방지
+        sfxPick.currentTime = 0; // 사운드를 처음부터 재생
+        sfxPick.play().then(() => {
+          // 사운드 재생이 완료된 후 페이지 이동
+          setTimeout(() => {
+            window.location.href = button.href;
+          }, 200); // SFX 길이에 따라 조절
+        }).catch(e => {
+          console.log("SFX 재생 실패 (click):", e);
+          // SFX 재생 실패 시에도 페이지 이동
+          window.location.href = button.href;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

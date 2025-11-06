@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>striker2945 - Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/game.css">
+</head>
+<body>
+  <div id="game-wrap">
+    <canvas id="game" width="480" height="720"></canvas>
+    <div class="hud">
+      <div class="line" id="hpHud">HP: 3</div>
+      <div class="line" id="coinHud">COINS: 0</div>
+      <div class="line" id="stageHud"></div>
+    </div>
+    <div class="tip" id="tip" style="opacity:0;"></div>
+  </div>
+
+  <!-- 순서 중요: defs → manager → game -->
+  <script src="assets/js/monster.js"></script>
+  <script src="assets/js/player_upgrade.js"></script>
+  <script src="assets/js/events/shop_event.js"></script>
+  <script src="assets/js/stages/stage_defs.js"></script>
+  <script src="assets/js/stages/stage_manager.js"></script>
+  <script src="assets/js/game.js"></script>
+</body>
+</html>

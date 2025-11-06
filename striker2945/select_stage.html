@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>striker2945 - Select Mode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/stage_list.css" />
+</head>
+<body>
+  <!-- 오디오 -->
+  <audio id="sfx-chiose" src="assets/audio/chiose.mp3"></audio>
+  <audio id="sfx-pick" src="assets/audio/pick.mp3"></audio>
+
+  <div class="main-content">
+    <div class="mode-select-panel">
+      <h1>SELECT MODE</h1>
+      <div class="panel-buttons">
+        <a class="btn" href="stage_list_easy.html">EASY</a>
+        <a class="btn" href="stage_list_hard.html">HARD</a>
+        <a class="btn back" href="main.html">&laquo; BACK</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- 오디오 요소 ---
+    const sfxChiose = document.getElementById('sfx-chiose');
+    const sfxPick = document.getElementById('sfx-pick');
+
+    // --- SFX 볼륨 설정 ---
+    const savedSFXVolume = localStorage.getItem('sfxVolume') || 70;
+    if (sfxChiose) sfxChiose.volume = savedSFXVolume / 100;
+    if (sfxPick) sfxPick.volume = savedSFXVolume / 100;
+
+    // --- 버튼 사운드 효과 ---
+    const modeButtons = document.querySelectorAll('.panel-buttons .btn');
+
+    modeButtons.forEach(button => {
+      // 마우스 오버 사운드
+      button.addEventListener('mouseenter', () => {
+        if (sfxChiose) {
+          sfxChiose.currentTime = 0;
+          sfxChiose.play().catch(e => {});
+        }
+      });
+
+      // 클릭 사운드 및 페이지 이동
+      button.addEventListener('click', (event) => {
+        event.preventDefault(); // 기본 링크 이동 방지
+        if (sfxPick) {
+          sfxPick.currentTime = 0;
+          sfxPick.play().then(() => {
+            setTimeout(() => { window.location.href = button.href; }, 200);
+          }).catch(e => {
+            window.location.href = button.href;
+          });
+        } else {
+          window.location.href = button.href;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+/* main_layout.css */
+/* main.html, select_stage.html 등 메인 화면 레이아웃을 공유하는 스타일 */
+
+.main-content {
+    /* 메인 콘텐츠를 중앙에 배치 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* 화면 전체 높이 */
+    text-align: center;
+
+    /* ▼▼▼ 배경 이미지 추가 ▼▼▼ */
+    background-image: url('../images/main.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    /* ▼▼▼ 배경 이미지가 밝아도 글씨가 잘 보이도록 수정 ▼▼▼ */
+    color: white; /* 글자색을 흰색으로 */
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8); /* 그림자 추가 */
+}

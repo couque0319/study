@@ -1,0 +1,157 @@
+/* assets/css/stage_list.css */
+
+/* ==== 공통 배경 및 폰트 ==== */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Press Start 2P', cursive;
+  color: #fff;
+  background: #000;
+}
+
+.main-content {
+  min-height: 100vh;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  display: grid;
+  place-items: center;
+  position: relative;
+  padding: 20px;
+}
+
+.main-content::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.6);
+  pointer-events: none;
+}
+
+.main-content.easy-mode { 
+    background-image: url('../images/moring.jpg');
+}
+.main-content.hard-mode { 
+    background-image: url('../images/night.png');
+}
+
+/* ==== 모드 선택 패널 (select_stage.html) ==== */
+.mode-select-panel {
+    position: relative;
+    text-align: center;
+}
+
+.mode-select-panel h1 {
+    font-size: 2.5rem;
+    color: #ffcc00;
+    text-shadow: 3px 3px 0 #000;
+    margin-bottom: 40px;
+}
+
+.panel-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.panel-buttons .btn {
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    color: #fff;
+    background-color: #333;
+    border: 4px solid #fff;
+    text-decoration: none;
+    box-shadow: 6px 6px 0 #000;
+    transition: all 0.2s ease;
+}
+
+.panel-buttons .btn:hover {
+    background-color: #ffcc00;
+    color: #000;
+    transform: translate(2px, 2px);
+    box-shadow: 4px 4px 0 #000;
+}
+
+.panel-buttons .btn.back {
+    font-size: 1rem;
+    padding: 10px 20px;
+    background-color: #555;
+}
+
+/* ==== 스테이지 목록 컨테이너 (stage_list_xxx.html) ==== */
+.stage-list-container {
+  position: relative;
+  width: min(1000px, 95vw);
+  padding: 20px;
+  background-color: #1a1a1a;
+  border: 4px solid #fff;
+  box-shadow: 8px 8px 0 #000;
+}
+
+.stage-list-container h2 {
+  font-size: 2rem;
+  color: #ffcc00;
+  text-align: center;
+  margin: 10px 0 30px;
+  text-shadow: 2px 2px 0px #000;
+}
+
+/* ==== 그리드 레이아웃 ==== */
+.stage-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+/* ==== 스테이지 버튼 ==== */
+.stage-box {
+  display: grid;
+  place-items: center;
+  height: 80px;
+  padding: 0 8px;
+  font-size: 1.2rem;
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+  background-color: #555; 
+  border: 2px solid #fff;
+  transition: all .2s ease;
+}
+.stage-box:hover {
+  background-color: #ffcc00;
+  color: #000;
+}
+
+/* 하드 모드 버튼 */
+.stage-box.hard {
+  background-color: #7c2d12; /* 어두운 주황색 */
+}
+.stage-box.hard:hover {
+  background-color: #f97316; /* 밝은 주황색 */
+  color: #000;
+}
+
+/* 잠김 상태 */
+.stage-box.locked {
+  background-color: #333;
+  border-style: dashed;
+  border-color: #888;
+  color: #888;
+  cursor: not-allowed;
+}
+.stage-box.locked:hover {
+  background-color: #333;
+  color: #888;
+}
+
+/* 뒤로가기 */
+.back-btn {
+  display: inline-block;
+  margin-top: 30px;
+  font-size: 1rem;
+  color: #fff;
+  text-decoration: none;
+  transition: color .2s ease;
+}
+.back-btn:hover {
+  color: #ffcc00;
+  text-decoration: underline;
+}

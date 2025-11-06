@@ -1,0 +1,58 @@
+/* ===============================
+   striker2945 - Game Style
+   =============================== */
+
+/* 기본 설정 */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #0b0e12;
+  color: #fff;
+  font-family: 'Press Start 2P', cursive;
+  overflow: hidden;
+}
+
+/* ---------------------------------
+   게임 캔버스 영역
+-----------------------------------*/
+#game-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* 캔버스 */
+#game {
+  background: #000;
+  image-rendering: pixelated; /* 픽셀 느낌 유지 */
+  border: 1px solid #222;
+}
+
+/* ---------------------------------
+   UI 오버레이
+-----------------------------------*/
+.hud {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.hud .line {
+  margin-bottom: 4px;
+}
+
+.tip {
+  position: absolute;
+  left: 50%;
+  top: 40px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  text-shadow: 2px 2px 0 #000;
+}

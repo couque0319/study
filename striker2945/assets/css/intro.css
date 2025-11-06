@@ -1,0 +1,39 @@
+/* intro.css */
+/* intro.html 전용 스타일 */
+
+.splash-screen {
+    background-image: url('../images/intro_image.png');
+    height: 100vh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-family: 'Press Start 2P', cursive; /* 새로운 폰트 적용 */
+}
+
+.splash-content {
+    color: white;
+}
+
+/* 깜빡임 애니메이션 */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.splash-content h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    text-shadow: 3px 3px 0px #000, 6px 6px 0px rgba(0,0,0,0.5);
+    color: #ffcc00; /* 금색 계열 */
+}
+
+.splash-content p {
+    font-size: 1.5rem; 
+    margin-top: 40px; 
+    text-shadow: 2px 2px 0px #000;
+    animation: blink 1.2s infinite step-end;
+}

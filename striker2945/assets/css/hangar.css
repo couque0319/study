@@ -1,0 +1,121 @@
+/* assets/css/hangar.css */
+
+.hangar-container {
+    width: 90%;
+    max-width: 800px;
+    padding: 20px 30px;
+    background-color: rgba(0, 0, 0, 0.75); 
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    gap: 25px; 
+}
+
+.hangar-container h2 {
+    font-size: 2.5rem;
+    color: white;
+    text-align: center;
+    margin: 0 0 10px 0;
+    text-shadow: 2px 2px 4px #000;
+}
+
+.airplane-selection {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.airplane-box {
+    background-color: #222;
+    border: 3px solid #888;
+    border-radius: 10px;
+    padding: 20px;
+    width: 45%;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.airplane-box h3 {
+    margin: 15px 0 10px 0;
+    font-size: 1.5rem;
+    color: #eee;
+}
+
+.airplane-box p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #ccc;
+    line-height: 1.4;
+}
+
+.airplane-box .airplane-image {
+    width: 100%;
+    max-width: 250px;
+    height: 250px;
+    margin: 0 auto 15px auto;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-bottom: 2px solid #555;
+    padding-bottom: 15px;
+    image-rendering: pixelated;
+}
+
+.airplane-box .airplane1-img {
+    background-image: url('../images/player/player1_frame2.png'); 
+}
+
+.airplane-box[data-plane-id="airplane1"]:hover .airplane1-img {
+    animation: engineFlameAnimation 0.6s steps(4) infinite;
+}
+
+@keyframes engineFlameAnimation {
+    0% { background-image: url('../images/player/player1_frame1.png'); }
+    25% { background-image: url('../images/player/player1_frame3.png'); }
+    50% { background-image: url('../images/player/player1_frame4.png'); }
+    75% { background-image: url('../images/player/player1_frame3.png'); }
+    100% { background-image: url('../images/player/player1_frame1.png'); }
+}
+
+.airplane-box .airplane2-img {
+    background-image: url('../images/player/player2_frame3.png'); 
+}
+
+.airplane-box[data-plane-id="airplane2"]:hover .airplane2-img {
+    animation: engineFlameAnimationPlayer2 0.6s steps(4) infinite;
+}
+
+@keyframes engineFlameAnimationPlayer2 {
+    0% { background-image: url('../images/player/player2_frame1.png'); }
+    25% { background-image: url('../images/player/player2_frame2.png'); }
+    50% { background-image: url('../images/player/player2_frame4.png'); }
+    75% { background-image: url('../images/player/player2_frame2.png'); }
+    100% { background-image: url('../images/player/player2_frame1.png'); }
+}
+
+.airplane-box:hover {
+    transform: scale(1.03);
+    border-color: #fff;
+}
+
+.airplane-box.selected {
+    background-color: #004a9e;
+    border-color: #8ec5fc;
+    box-shadow: 0 0 20px rgba(142, 197, 252, 0.7);
+}
+
+.back-btn {
+    margin-top: 10px;
+    font-size: 1rem;
+    color: #ddd;
+    text-decoration: none;
+    text-align: center;
+    transition: color 0.2s;
+}
+
+.back-btn:hover {
+    color: white;
+    text-decoration: underline;
+}

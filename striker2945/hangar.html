@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>striker2945 - Hangar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/main_layout.css">
+    <link rel="stylesheet" href="assets/css/hangar.css">
+</head>
+<body>
+    <!-- 오디오 -->
+    <audio id="sfx-chiose" src="assets/audio/chiose.mp3"></audio>
+    <audio id="sfx-pick" src="assets/audio/pick.mp3"></audio>
+
+    <div class="main-content">
+
+        <div class="hangar-container">
+            <h2>SELECT AIRCRAFT</h2>
+            
+            <div class="airplane-selection">
+                <div class="airplane-box" data-plane-id="airplane1">
+                    <div class="airplane-image airplane1-img"></div> 
+                    <h3>TYPE-A: Striker</h3>
+                    <p>Standard type. Well-balanced.</p>
+                </div>
+                
+                <div class="airplane-box" data-plane-id="airplane2">
+                    <div class="airplane-image airplane2-img"></div>
+                    <h3>TYPE-B: Interceptor</h3>
+                    <p>High-speed type. Fast but fragile.</p>
+                </div>
+            </div>
+            
+            <a href="main.html" class="back-btn">
+                &laquo; BACK TO MAIN
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // --- 오디오 요소 --- 
+        const sfxChiose = document.getElementById('sfx-chiose');
+        const sfxPick = document.getElementById('sfx-pick');
+
+        // --- SFX 볼륨 설정 ---
+        const savedSFXVolume = localStorage.getItem('sfxVolume') || 70;
+        sfxChiose.volume = savedSFXVolume / 100;
+        sfxPick.volume = savedSFXVolume / 100;
+
+        // --- 기체 선택 로직 ---
+        const selectionBoxes = document.querySelectorAll('.airplane-box');
+        const savedPlaneId = localStorage.getItem('selectedAirplane');
+
+        // 1. 페이지 로드 시, 이전에 선택한 기체에 .selected 표시
+        if (savedPlaneId) {
+            const savedBox = document.querySelector(`.airplane-box[data-plane-id="${savedPlaneId}"]`);
+            if (savedBox) {
+                savedBox.classList.add('selected');
+            }
+        }
+
+        // 2. 각 기체 박스에 이벤트 리스너 추가
+        selectionBoxes.forEach(box => {
+            // 마우스 오버 사운드
+            box.addEventListener('mouseenter', () => {
+                sfxChiose.currentTime = 0;
+                sfxChiose.play().catch(e => {});
+            });
+
+            // 클릭 시 선택 및 사운드
+            box.addEventListener('click', () => {
+                // 사운드 재생
+                sfxPick.currentTime = 0;
+                sfxPick.play().catch(e => {});
+
+                // 기존 선택 로직
+                selectionBoxes.forEach(b => b.classList.remove('selected'));
+                box.classList.add('selected');
+                
+                const planeId = box.dataset.planeId;
+                localStorage.setItem('selectedAirplane', planeId);
+                console.log(`Aircraft selected: ${planeId}`);
+            });
+        });
+
+        // --- 뒤로가기 버튼 사운드 ---
+        const backButton = document.querySelector('.back-btn');
+        if (backButton) {
+            backButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                sfxPick.currentTime = 0;
+                sfxPick.play().then(() => {
+                    setTimeout(() => { window.location.href = backButton.href; }, 200);
+                }).catch(e => {
+                    window.location.href = backButton.href;
+                });
+            });
+        }
+    </script>
+</body>
+</html>

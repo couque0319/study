@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>striker2945 - Easy Mode</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/stage_list.css" />
+</head>
+<body>
+  <div class="main-content easy-mode">
+    <div class="stage-list-container">
+      <h2>EASY MODE</h2>
+      <div id="stage-grid" class="stage-grid"></div>
+      <a class="back-btn" href="select_stage.html">&laquo; BACK</a>
+    </div>
+  </div>
+  <script src="assets/js/stage_list_easy.js"></script>
+
+  <!-- 오디오 -->
+  <audio id="sfx-chiose" src="assets/audio/chiose.mp3"></audio>
+  <audio id="sfx-pick" src="assets/audio/pick.mp3"></audio>
+
+  <script>
+    // --- 오디오 요소 ---
+    const sfxChiose = document.getElementById('sfx-chiose');
+    const sfxPick = document.getElementById('sfx-pick');
+
+    // --- SFX 볼륨 설정 ---
+    const savedSFXVolume = localStorage.getItem('sfxVolume') || 70;
+    if (sfxChiose) sfxChiose.volume = savedSFXVolume / 100;
+    if (sfxPick) sfxPick.volume = savedSFXVolume / 100;
+
+    // --- 버튼 사운드 효과 ---
+    // stage_list_easy.js가 버튼을 동적으로 생성하므로, 잠시 후 실행
+    setTimeout(() => {
+      const allButtons = document.querySelectorAll('.stage-box, .back-btn');
+
+      allButtons.forEach(button => {
+        // 마우스 오버 사운드
+        button.addEventListener('mouseenter', () => {
+          if (button.classList.contains('locked') || !sfxChiose) return;
+          sfxChiose.currentTime = 0;
+          sfxChiose.play().catch(e => {});
+        });
+
+        // 클릭 사운드 및 페이지 이동 (기존 리스너와 충돌하지 않도록 주의)
+        // 기존에 잠긴 버튼에만 리스너가 있었으므로, 여기서는 잠금 해제된 버튼과 뒤로가기 버튼에만 새 리스너를 추가하는 것이 안전합니다.
+        if (!button.classList.contains('locked')) {
+          button.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (sfxPick) {
+              sfxPick.currentTime = 0;
+              sfxPick.play().then(() => {
+                setTimeout(() => { window.location.href = button.href; }, 200);
+              }).catch(e => {
+                window.location.href = button.href;
+              });
+            } else {
+              window.location.href = button.href;
+            }
+          });
+        }
+      });
+    }, 100); // 100ms 정도면 충분
+  </script>
+</body>
+</html>
